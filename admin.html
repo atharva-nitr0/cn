@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CareNest Admin</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+    th { background: #f2f2f2; }
+    .actions { white-space: nowrap; }
+    button { padding: 5px 10px; margin-right: 5px; }
+  </style>
+</head>
+<body>
+  <h1>Booking Requests</h1>
+  <table id="bookingsTable">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Name</th>
+        <th>Service</th>
+        <th>Time</th>
+        <th>Contact</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+    import { getDatabase, ref, onValue, remove } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-database.js";
+
+    // Use your same Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyALZrP95XgAJ92G9p9KJuUNhCrWSWEezd8",
+      authDomain: "carenest-9b16d.firebaseapp.com",
+      projectId: "carenest-9b16d",
+      storageBucket: "carenest-9b16d.firebasestorage.app",
+      messagingSenderId: "221167399430",
+      appId: "1:221167399430:web:d3e9d1286fb3b7dcbe0987"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Load and display bookings
+    const bookingsRef = ref(db, 'bookings');
+    onValue(bookingsRef, (snapshot) => {
+      const bookings = snapshot.val();
+      const tbody = document.querySelector('#bookingsTable tbody');
+      tbody.innerHTML = '';
+
+      if (bookings) {
+        Object.entries(bookings).forEach(([key, booking]) => {
+          const row = `
+            <tr>
+              <td>${booking.date}</td>
+              <td>${booking.name}</td>
+              <td>${booking.service}</td>
+              <td>${booking.time}</td>
+              <td>${booking.phone}<br>${booking.email}</td>
+              <td class="actions">
+                <button onclick="deleteBooking('${key}')">Delete</button>
+              </td>
+            </tr>
+          `;
+          tbody.innerHTML += row;
+        });
+      }
+    });
+
+    // Add to global scope for button clicks
+    window.deleteBooking = (key) => {
+      if (confirm('Delete this booking?')) {
+        remove(ref(db, `bookings/${key}`));
+      }
+    };
+  </script>
+</body>
+</html>
